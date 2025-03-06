@@ -1,35 +1,64 @@
-const app = require('koa')();
-const router = require('koa-router')();
-const db = require('./db.json');
+const Koa = require('koa');
+const Router = require('koa-router');
+const fs = require('fs');
+const path = require('path');
+const db = JSON.parse(fs.readFileSync('./db.json', 'utf8'));
 
-// Log requests
-app.use(function *(next){
-  const start = new Date;
-  yield next;
-  const ms = new Date - start;
-  console.log('%s %s - %s', this.method, this.url, ms);
+const app = new Koa();
+const router = new Router();
+
+// Path to logging file
+const LOG_FILE_PATH = path.join('..', 'logging', 'db.json');
+console.log("Log file path:", LOG_FILE_PATH); 
+
+const logRequest = (ctx) => {
+  const logEntry = {
+    timestamp: new Date().toISOString(),
+    method: ctx.method,
+    url: ctx.url,
+    headers: ctx.headers,
+    ip: ctx.ip,
+    status: ctx.status,
+  };
+
+  try {
+    let logs = [];
+    if (fs.existsSync(LOG_FILE_PATH)) {
+      const data = fs.readFileSync(LOG_FILE_PATH, 'utf8');
+      logs = data ? JSON.parse(data) : [];
+    }
+    logs.push(logEntry);
+    fs.writeFileSync(LOG_FILE_PATH, JSON.stringify(logs, null, 2), 'utf8');
+  } catch (error) {
+    console.error('Error writing to log file:', error);
+  }
+};
+
+app.use(async (ctx, next) => {
+  await next();
+  logRequest(ctx);
 });
 
-router.get('/api/threads', function *() {
-  this.body = db.threads;
+// Get all threads
+router.get('/api/threads', async (ctx) => {
+  ctx.body = db.threads;
 });
 
-router.get('/api/threads/:threadId', function *() {
-  const id = parseInt(this.params.threadId);
-  this.body = db.threads.find((thread) => thread.id == id);
-});
+// Get a thread by ID
+router.get('/api/threads/:id', async (ctx) => {
+  const threadId = parseInt(ctx.params.id);
+  const thread = db.threads.find((t) => t.id === threadId);
 
-router.get('/api/', function *() {
-  this.body = "API ready to receive requests";
-});
-
-router.get('/', function *() {
-  this.body = "Ready to receive requests";
+  if (thread) {
+    ctx.body = thread;
+  } else {
+    ctx.status = 404;
+    ctx.body = { error: 'Thread not found' };
+  }
 });
 
 app.use(router.routes());
 app.use(router.allowedMethods());
 
-app.listen(3000);
-
-console.log('Worker started');
+const PORT = 3003;
+app.listen(PORT, () => console.log(`Threads service running on port ${PORT}`));
