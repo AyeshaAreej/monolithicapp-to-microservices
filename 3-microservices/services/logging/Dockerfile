@@ -11,3 +11,4 @@ COPY . .
 
 # Start the application
 CMD ["node", "server.js"]
+EXPOSE 3000

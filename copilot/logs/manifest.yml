@@ -28,6 +28,8 @@ count: 1       # Number of tasks that should be running in your service.
 exec: true     # Enable running commands in your container.
 network:
   connect: true # Enable Service Connect for intra-environment traffic between services.
+logging:
+  retention: 30 # Logs are retained for 30 days
 
 # storage:
   # readonly_fs: true       # Limit to read-only access to mounted root filesystems.

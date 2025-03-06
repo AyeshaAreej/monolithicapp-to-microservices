@@ -6,16 +6,41 @@ const fs = require('fs');
 const app = new Koa();
 const router = new Router();
 const db = require('./db.json');
+app.use(express.json());
 
 // Middleware to parse request body
 app.use(bodyParser());
 
 // Middleware to log requests
-app.use(async (ctx, next) => {
-  const start = new Date();
-  await next();
-  const ms = new Date() - start;
-  console.log(`${ctx.method} ${ctx.url} - ${ms}ms`);
+// app.use(async (ctx, next) => {
+//   const start = new Date();
+//   await next();
+//   const ms = new Date() - start;
+//   console.log(`${ctx.method} ${ctx.url} - ${ms}ms`);
+// });
+
+
+// Middleware to log requests and responses
+app.use((req, res, next) => {
+    const startTime = Date.now();
+    const originalSend = res.send;
+
+    res.send = function (body) {
+        const endTime = Date.now();
+        const log = {
+            method: req.method,
+            url: req.originalUrl,
+            headers: req.headers,
+            requestBody: req.body,
+            responseBody: body,
+            statusCode: res.statusCode,
+            responseTime: `${endTime - startTime}ms`
+        };
+        fs.appendFileSync("db.json", JSON.stringify(log) + "\n");
+        originalSend.apply(res, arguments);
+    };
+
+    next();
 });
 
 // GET: Retrieve all log entries
