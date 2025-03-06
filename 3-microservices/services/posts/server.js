@@ -18,24 +18,33 @@ const logRequest = (ctx) => {
     timestamp: new Date().toISOString(),
     method: ctx.method,
     url: ctx.url,
-    headers: ctx.headers, // Logs request headers
     ip: ctx.ip, // User IP Address
     status: ctx.status, // Response status code
   };
 
   try {
-    // Read existing logs or initialize an array
-    let logs = [];
+    let logsData = { logs: [] }; // Default structure
+
+    // Read existing logs
     if (fs.existsSync(LOG_FILE_PATH)) {
-      const data = fs.readFileSync(LOG_FILE_PATH, 'utf8');
-      logs = data ? JSON.parse(data) : [];
+      const data = fs.readFileSync(LOG_FILE_PATH, 'utf8').trim();
+      if (data) {
+        const parsedData = JSON.parse(data);
+        if (parsedData.logs && Array.isArray(parsedData.logs)) {
+          logsData = parsedData;
+        } else {
+          console.warn("⚠ Log file structure incorrect. Resetting...");
+        }
+      }
     }
 
-    // Append new log entry
-    logs.push(logEntry);
+    // Append new log entry to logs array
+    logsData.logs.push(logEntry);
 
-    // Write back to the log file
-    fs.writeFileSync(LOG_FILE_PATH, JSON.stringify(logs, null, 2), 'utf8');
+    console.log("✅ Appending log entry:", logEntry);
+
+    // Write updated log back to the file
+    fs.writeFileSync(LOG_FILE_PATH, JSON.stringify(logsData, null, 2), 'utf8');
   } catch (error) {
     console.error('Error writing to log file:', error);
   }
@@ -55,6 +64,7 @@ app.use(async (ctx, next) => {
 // Get all posts
 router.get('/api/posts', async (ctx) => {
   ctx.body = db.posts;
+  console.log('Inside get all posts');
 });
 
 // Get posts in a specific thread
