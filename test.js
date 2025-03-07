@@ -25,7 +25,7 @@ const logRequest = (ctx) => {
             if (data) {
                 const parsedData = JSON.parse(data);
                 if (parsedData.logs && Array.isArray(parsedData.logs)) {
-                    logsData = parsedData;
+                    logsData = parsedData;``
                 } else {
                     console.warn("⚠ Log file structure incorrect. Resetting...");
                 }
