@@ -1,8 +1,14 @@
-FROM mhart/alpine-node:7.10.1
+FROM node:18-alpine
 
 WORKDIR /srv
-ADD . .
-RUN npm install
+
+# Copy package.json and install dependencies
+COPY package*.json ./
+RUN npm install --only=production
+
+# Copy all files (including server.js)
+COPY . . 
 
 EXPOSE 3000
+# Start the application
 CMD ["node", "server.js"]
