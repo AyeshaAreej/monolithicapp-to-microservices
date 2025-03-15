@@ -1,0 +1,4 @@
+option_settings:
+  aws:ec2:vpc:
+    VPCId: vpc-0832b3743290bd292
+    Subnets: subnet-05de622b7fa75c0f4
