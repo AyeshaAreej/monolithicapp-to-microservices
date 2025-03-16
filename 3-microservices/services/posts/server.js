@@ -45,7 +45,7 @@ app.use(async (ctx, next) => {
   console.log(`${ctx.method} ${ctx.url} - ${durationMs}ms`);
   logRequest(ctx);
 });
-
+// update posts api to include fetching posts along with timestamps too
 router.get('/api/posts', (ctx) => {
   const { startTime, endTime } = ctx.query;
   let filteredPosts = db.posts;
@@ -87,7 +87,7 @@ app.use(bodyParser());
 app.use(router.routes());
 app.use(router.allowedMethods());
 
-const PORT = 3004;
+const PORT = 3003;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

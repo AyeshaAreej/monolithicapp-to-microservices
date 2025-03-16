@@ -3,32 +3,38 @@
     {
       "thread": 1,
       "text": "Has anyone checked on the lich recently?",
-      "user": 4
+      "user": 4,
+      "timestamp":"2024-07-10T12:00:00Z"
     },
     {
       "thread": 1,
       "text": "I'll stop by and see how he's doing tomorrow!",
-      "user": 2
+      "user": 2,
+      "timestamp":"2024-07-10T15:00:00Z"
     },
     {
       "thread": 2,
       "text": "Come party with the candy people tomorrow!",
-      "user": 3
+      "user": 3,
+      "timestamp":"2024-07-11T08:30:00Z"
     },
     {
       "thread": 2,
       "text": "Mathematical!",
-      "user": 2
+      "user": 2,
+      "timestamp":"2024-07-11T09:00:00Z"
     },
     {
       "thread": 2,
       "text": "I'll bring my guitar",
-      "user": 1
+      "user": 1,
+      "timestamp":"2024-07-11T18:45:00Z"
     },
     {
       "thread": 3,
       "text": "I need a new guitar to play the most savory licks in Ooo",
-      "user": 1
+      "user": 1,
+      "timestamp":"2024-07-12T14:00:00Z"
     }
   ]
 }
