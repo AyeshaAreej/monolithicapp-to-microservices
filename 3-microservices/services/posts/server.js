@@ -1,40 +1,50 @@
-const app = require('koa')();
-const router = require('koa-router')();
+const Koa = require('koa');
+const Router = require('koa-router');
 const db = require('./db.json');
 
-// Log requests
-app.use(function *(next){
-  const start = new Date;
-  yield next;
-  const ms = new Date - start;
-  console.log('%s %s - %s', this.method, this.url, ms);
+const app = new Koa();
+const router = new Router();
+
+// Middleware to log requests
+app.use(async (ctx, next) => {
+  const start = Date.now();
+  await next();
+  const ms = Date.now() - start;
+  console.log(`${ctx.method} ${ctx.url} - ${ms}ms`);
 });
 
-router.get('/api/posts/in-thread/:threadId', function *() {
-  const id = parseInt(this.params.threadId);
-  this.body = db.posts.filter((post) => post.thread == id);
+// Route: Get posts in a specific thread
+router.get('/api/posts/in-thread/:threadId', async (ctx) => {
+  const id = parseInt(ctx.params.threadId);
+  ctx.body = db.posts.filter((post) => post.thread === id);
 });
 
-router.get('/api/posts', function *() {
-  this.body = db.posts;
+// Route: Get all posts
+router.get('/api/posts', async (ctx) => {
+  ctx.body = db.posts;
 });
 
-router.get('/api/posts/by-user/:userId', function *() {
-  const id = parseInt(this.params.userId);
-  this.body = db.posts.filter((post) => post.user == id);
+// Route: Get posts by a specific user
+router.get('/api/posts/:userId', async (ctx) => {
+  const id = parseInt(ctx.params.userId);
+  ctx.body = db.posts.filter((post) => post.user === id);
 });
 
-router.get('/api/', function *() {
-  this.body = "API ready to receive requests";
+// Root API health check
+router.get('/api/', async (ctx) => {
+  ctx.body = "API ready to receive requests";
 });
 
-router.get('/', function *() {
-  this.body = "Ready to receive requests";
+// Root route
+router.get('/', async (ctx) => {
+  ctx.body = "Ready to receive requests";
 });
 
-app.use(router.routes());
-app.use(router.allowedMethods());
+// Apply routes and methods
+app.use(router.routes()).use(router.allowedMethods());
 
-app.listen(3000);
-
-console.log('Worker started');
+// Start server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});
