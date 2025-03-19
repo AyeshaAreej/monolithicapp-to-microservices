@@ -4,7 +4,8 @@ WORKDIR /srv
 
 # Copy package.json and install dependencies
 COPY package*.json ./
-RUN npm install --only=production
+RUN npm install
+
 
 # Copy all files (including server.js)
 COPY . . 

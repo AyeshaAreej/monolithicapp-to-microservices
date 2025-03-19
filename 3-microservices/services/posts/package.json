@@ -1,5 +1,6 @@
 {
   "dependencies": {
+
     "cors": "^2.8.5",
     "koa": "^2.14.2",
     "koa-bodyparser": "^4.4.1",

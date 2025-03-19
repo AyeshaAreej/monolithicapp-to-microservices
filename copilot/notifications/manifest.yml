@@ -1,9 +1,9 @@
-# The manifest for the "users" service.
+# The manifest for the "notifications" service.
 # Read the full specification for the "Load Balanced Web Service" type at:
 #  https://aws.github.io/copilot-cli/docs/manifest/lb-web-service/
 
 # Your service name will be used in naming your resources like log groups, ECS services, etc.
-name: users
+name: notifications
 type: Load Balanced Web Service
 
 # Distribute traffic to your service.
@@ -11,14 +11,13 @@ http:
   # Requests to this path will be forwarded to your service.
   # To match all requests you can use the "/" path.
   path: '/'
-
   # You can specify a custom health check path. The default is "/".
-  # healthcheck: '/'
+  healthcheck: '/health'
 
 # Configuration for your containers and service.
 image:
   # Docker build arguments. For additional overrides: https://aws.github.io/copilot-cli/docs/manifest/lb-web-service/#image-build
-  build: 3-microservices\services\users\Dockerfile
+  build: 3-microservices\services\notifications\Dockerfile
   # Port exposed through your container to route traffic to it.
   port: 3000
 
@@ -46,3 +45,10 @@ network:
 #    count: 2               # Number of tasks to run for the "test" environment.
 #    deployment:            # The deployment strategy for the "test" environment.
 #       rolling: 'recreate' # Stops existing tasks before new ones are started for faster deployments.
+
+variables:
+  PORT: "3000"
+  SMTP_HOST: "smtp.gmail.com"
+  SMTP_PORT: "587"
+  SMTP_USER: "saqibsoomro23@gmail.com"
+  SMTP_PASS: "orcxdzgiwyruueza"

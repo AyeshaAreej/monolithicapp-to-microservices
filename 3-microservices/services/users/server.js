@@ -1,93 +1,80 @@
-/***************************************************************************
- * users-server.js (Users service with Winston CloudWatch logging)
- ***************************************************************************/
-
 const Koa = require('koa');
 const Router = require('koa-router');
-const fs = require('fs');
-const path = require('path');
 const bodyParser = require('koa-bodyparser');
+const axios = require('axios'); // Import axios for API requests
+const db = require('./db.json');
 
-// 1) Winston + CloudWatch
-const winston = require('winston');
-const WinstonCloudWatch = require('winston-cloudwatch');
-
-const logger = winston.createLogger({
-  transports: [
-    // Local console for debugging
-    new winston.transports.Console(),
-
-    // CloudWatch transport
-    new WinstonCloudWatch({
-      logGroupName: '/ecs/user-service', // Use your own log group name
-      logStreamName: 'users-service',            // Customize for this service
-      awsRegion: 'us-west-2',                   // Match your AWS region
-      jsonMessage: true                         // Logs as JSON
-      // If running locally, ensure AWS credentials are set (env vars or ~/.aws/credentials).
-    })
-  ]
-});
-
-// 2) Load "Users" data from db.json
-const DB_PATH = path.join(__dirname, 'db.json');
-let db = { users: [] };
-
-if (fs.existsSync(DB_PATH)) {
-  const data = fs.readFileSync(DB_PATH, 'utf8');
-  db = JSON.parse(data);
-}
-
-// 3) Create Koa app and router
 const app = new Koa();
 const router = new Router();
 
-// Helper function to send log data to CloudWatch
-function logRequest(ctx) {
-  const logEntry = {
-    timestamp: new Date().toISOString(),
-    method: ctx.method,
-    url: ctx.url,
-    ip: ctx.ip,
-    status: ctx.status
-  };
+// Email Microservice Base URL (Replace with actual AWS URL)
+const EMAIL_MICROSERVICE_URL = "http://notifi-Publi-bRvo70paHthM-569285455.us-west-2.elb.amazonaws.com/api/notify";
 
-  // Winston logs to CloudWatch
-  logger.info('Request Log', logEntry);
-}
-
-// Logging middleware
+// Middleware for logging requests
 app.use(async (ctx, next) => {
+  const start = Date.now();
   await next();
-  logRequest(ctx);
+  const ms = Date.now() - start;
+  console.log(${ctx.method} ${ctx.url} - ${ms}ms);
 });
 
-// 4) Define Users routes
+
+// Get all users
 router.get('/api/users', async (ctx) => {
   ctx.body = db.users;
 });
 
-router.get('/api/users/:id', async (ctx) => {
-  const userId = parseInt(ctx.params.id, 10);
-  const user = db.users.find((u) => u.id === userId);
+// Get user by ID and send email using the notification microservice
+router.get('/api/users/:userId', async (ctx) => {
+  const id = parseInt(ctx.params.userId);
+  const user = db.users.find((user) => user.id === id);
 
-  if (user) {
-    ctx.body = user;
-  } else {
+  if (!user) {
     ctx.status = 404;
-    ctx.body = { error: 'User not found' };
+    ctx.body = { error: "User not found" };
+    return;
+  }
+
+  // Email content
+  const emailData = {
+    to: user.email,
+    subject: "Welcome to Our Website 🎉",
+    message: Hello ${user.name},\n\nWelcome to our website! We are excited to invite you to our special event. Stay tuned for more details!\n\nBest Regards,\nThe Event Team
+  };
+
+  try {
+    // Call the email notification microservice
+    const response = await axios.post(EMAIL_MICROSERVICE_URL, emailData);
+    console.log(Email sent to ${user.email}:, response.data);
+
+    ctx.body = {
+      message: User found and email sent via notification service,
+      user,
+      email_status: response.data
+    };
+  } catch (error) {
+    console.error("Error sending email via notification service:", error.message);
+    ctx.status = 500;
+    ctx.body = { error: "Failed to send email", details: error.message };
   }
 });
 
-router.get('/health', async (ctx) => {
-  ctx.status = 200;
-  ctx.body = { status: 'healthy' };
+// API readiness check
+router.get('/api/', async (ctx) => {
+  ctx.body = "API ready to receive requests";
 });
 
-// Apply bodyParser and routes
+router.get('/', async (ctx) => {
+  ctx.body = "Ready to receive requests";
+});
+
+// Apply routes
 app.use(bodyParser());
 app.use(router.routes());
 app.use(router.allowedMethods());
 
-// 5) Start the server
-const PORT = 3000;
-app.listen(PORT, () => console.log(`Users service running on port ${PORT}`));
+// Start server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(Server running on http://localhost:${PORT});
+});
