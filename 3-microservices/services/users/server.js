@@ -1,4 +1,3 @@
-
 const Koa = require('koa');
 const Router = require('koa-router');
 const bodyParser = require('koa-bodyparser');
@@ -16,7 +15,7 @@ app.use(async (ctx, next) => {
   const start = Date.now();
   await next();
   const ms = Date.now() - start;
-  console.log(`${ctx.method} ${ctx.url} - ${ms}ms`);
+  console.log(${ctx.method} ${ctx.url} - ${ms}ms);
 });
 
 
@@ -40,16 +39,16 @@ router.get('/api/users/:userId', async (ctx) => {
   const emailData = {
     to: user.email,
     subject: "Welcome to Our Website 🎉",
-    message: `Hello ${user.name},\n\nWelcome to our website! We are excited to invite you to our special event. Stay tuned for more details!\n\nBest Regards,\nThe Event Team`
+    message: Hello ${user.name},\n\nWelcome to our website! We are excited to invite you to our special event. Stay tuned for more details!\n\nBest Regards,\nThe Event Team
   };
 
   try {
     // Call the email notification microservice
     const response = await axios.post(EMAIL_MICROSERVICE_URL, emailData);
-    console.log(`Email sent to ${user.email}:`, response.data);
+    console.log(Email sent to ${user.email}:, response.data);
 
     ctx.body = {
-      message: `User found and email sent via notification service`,
+      message: User found and email sent via notification service,
       user,
       email_status: response.data
     };
@@ -77,5 +76,5 @@ app.use(router.allowedMethods());
 // Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(Server running on http://localhost:${PORT});
 });

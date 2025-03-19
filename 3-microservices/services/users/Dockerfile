@@ -6,6 +6,7 @@ WORKDIR /srv
 COPY package*.json ./
 RUN npm install
 
+
 # Copy all files (including server.js)
 COPY . . 
 
